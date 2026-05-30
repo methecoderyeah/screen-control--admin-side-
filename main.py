@@ -4,8 +4,9 @@ import win32con
 import win32event
 import win32serviceutil
 import socket
-import json
 import tkinter as tk
+from PIL import Image, ImageTk
+import GUI
 
 #socket commands
 
@@ -27,21 +28,23 @@ def listen():
         data, addr = s.recvfrom(port)
         message = data.decode("utf-8")
         print(f"Received from {addr}: {message}")
+
 port = 4467
 
 #  ~~GUI~~~
 
 #window setup:
-#use https://colorhunt.co/palette/fff9d2ffebccbfddf08cc0eb as the color palatte for this
 window = tk.Tk()
 window.title('Screen Admin Controls')
 window.state("zoomed")
-icon = tk.PhotoImage(file="./images/capybara.png")
-window.iconphoto(True, icon)
 window.config(bg="#BFDDF0")
 
-#main page:
-controls_label = tk.Label(text="Controls:", fg="#FFF9D2")
-controls_label.pack()
+# Load icon using PIL
+icon_img = Image.open("./images/capybara.png")
+icon_img = icon_img.resize((64, 64), Image.LANCZOS)
+icon_tk = ImageTk.PhotoImage(icon_img)
+window.iconphoto(True, icon_tk)
+
+GUI.MainPage(window)
 
 window.mainloop()
