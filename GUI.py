@@ -147,3 +147,5 @@ class MainPage:
             table_widget = df_to_treeview(self.window, data)
             table_widget.grid(row=6, column=0, columnspan=3, padx=50, pady=20, sticky="nsew")
         table(data)
+    def initialize_freeze_button(self):
+        pass
