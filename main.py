@@ -1,12 +1,14 @@
-import win32api
-import win32service
-import win32con
-import win32event
-import win32serviceutil
 import socket
 import tkinter as tk
 from PIL import Image, ImageTk
 import GUI
+import pandas as pd
+
+#pandas user dataframe
+df = pd.DataFrame({
+    'Users:': ["Yaoyu"],
+    'Processes': [["edge", "GUI", "MCE", "Visual Studio Code"]],
+    'More': ["Button Will Go Here Eventually."]})
 
 #socket commands
 
@@ -45,6 +47,6 @@ icon_img = icon_img.resize((64, 64), Image.LANCZOS)
 icon_tk = ImageTk.PhotoImage(icon_img)
 window.iconphoto(True, icon_tk)
 
-GUI.MainPage(window)
+GUI.MainPage(window, df)
 
 window.mainloop()
