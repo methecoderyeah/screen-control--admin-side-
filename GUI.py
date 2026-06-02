@@ -7,11 +7,12 @@ from pandas_dataframe_to_table import df_to_treeview
 class MainPage:
     def __init__(self, window, data):
         self.window = window
+        self.table_widget = None   # NEW: persistent table reference
+
         self.ttk_()
         self.stretch_grid()
-        self.destroy_all()
         self.build(data)
-
+        
     def stretch_grid(self):
         for col in range(3):
             self.window.grid_columnconfigure(col, weight=1, uniform="topbar")
@@ -145,13 +146,25 @@ class MainPage:
         row_5()
 
         def table(data):
-            table_widget = df_to_treeview(self.window, data)
-            table_widget.grid(row=6, column=0, columnspan=3, padx=50, pady=20, sticky="nsew")
+            # NEW: store table widget persistently
+            self.table_widget = df_to_treeview(self.window, data)
+            self.table_widget.grid(row=6, column=0, columnspan=3, padx=50, pady=20, sticky="nsew")
+
         table(data)
-        
+
+    # NEW: update_table method
+    def update_table(self, new_df):
+        if self.table_widget:
+            self.table_widget.destroy()
+
+        self.table_widget = df_to_treeview(self.window, new_df)
+        self.table_widget.grid(row=6, column=0, columnspan=3, padx=50, pady=20, sticky="nsew")
+
     def initialize_freeze_button(self, command):
         self.freeze_screens_button.config(command=command)
+
     def initialize_refresh_button(self, command):
         self.refresh_button.config(command=command)
+
     def initialize_change_port_button(self, command):
         self.change_port_button.config(command=command)

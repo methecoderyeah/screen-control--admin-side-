@@ -1,37 +1,17 @@
-import socket
+from socketcommands import SocketCommands
 import tkinter as tk
 from PIL import Image, ImageTk
 import GUI
 import pandas as pd
+import tkinter.simpledialog as sd
+from biginput import big_askstring
 
 #pandas user dataframe
 df = pd.DataFrame({
-    'Users:': ["Yaoyu"],
-    'Processes': [["edge", "GUI", "MCE", "Visual Studio Code"]],
-    'More': ["Button Will Go Here Eventually."]})
+    'Users:': [''],
+    'Processes': ['']
+    })
 
-#socket commands
-
-#send commands
-def send(command):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    message = command.encode("utf-8")
-    s.sendto(message, ("<broadcast>", port)) #change this to change port
-
-#recieve images and name of user
-def listen():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind(("", port)) #change this to change port
-
-    print(f"Listening for UDP broadcasts on port {port}...")
-
-    while True:
-        data, addr = s.recvfrom(port)
-        message = data.decode("utf-8")
-        print(f"Received from {addr}: {message}")
-
-port = 4467
 
 #  ~~GUI~~~
 
@@ -47,6 +27,46 @@ icon_img = icon_img.resize((64, 64), Image.LANCZOS)
 icon_tk = ImageTk.PhotoImage(icon_img)
 window.iconphoto(True, icon_tk)
 
-GUI.MainPage(window, df)
+GUI_ = GUI.MainPage(window, df)
+
+#functions
+sc = SocketCommands()
+def freeze_screens():
+    sc.messenger.freeze()
+    if GUI_.freeze_screens_button["text"] == "Freeze All Screens":
+        GUI_.freeze_screens_button.config(text="Unfreeze Screens")
+    elif GUI_.freeze_screens_button["text"] == "Unfreeze Screens":
+        GUI_.freeze_screens_button.config(text="Freeze All Screens")
+def refresh_buttons():
+    sc.messenger.processes()
+    thread, messages = sc.receiver.listen_for_3_seconds()
+    def finish_refresh():
+        thread.join()
+        clean = [msg for msg, addr in messages]
+        rows = []
+        for entry in clean:
+            rows.append({
+                "Users:": entry.get("Sender", None),
+                "Processes": entry.get("Processes", None)
+            })
+        df = pd.DataFrame(rows)
+        df = df.dropna()
+        if df.empty:
+            df = pd.DataFrame({
+                "Users:": [""],
+                "Processes": [""]
+            })
+        GUI_.update_table(df)
+    window.after(1500, finish_refresh)
+def reset_port():
+    password = big_askstring("Change Port", "Password")
+    if password:
+        port = big_askstring("Change Port", "Enter new port:")
+
+
+
+GUI_.initialize_freeze_button(freeze_screens)
+GUI_.initialize_refresh_button(refresh_buttons)
+GUI_.initialize_change_port_button(reset_port)
 
 window.mainloop()

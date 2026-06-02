@@ -31,18 +31,18 @@ class SocketCommands:
             }
             self.send_message(json.dumps(data))
 
-        def send_images(self, target):
+        def send_images(self, target="ALL"):
             data = {
                 "Sender": "Screen Control",
                 "Target": target,
-                "Command": "Send Images"
+                "Command": "SendImages"
             }
             self.send_message(json.dumps(data))
 
         def reset_socket(self, new_socket, password):
             data = {
                 "Sender": "Screen Control",
-                "Command": "Reset Socket",
+                "Command": "ResetSocket",
                 "Socket": new_socket,
                 "Password": password
             }
@@ -50,6 +50,15 @@ class SocketCommands:
 
             with open("socket.txt", "w") as file:
                 file.write(str(new_socket))
+        
+        def processes(self, target="ALL"):
+            data = {
+                "Sender": "Screen Control",
+                "Command": "ReProc",
+                "Target": target
+            }
+            self.send_message(json.dumps(data))
+
 
     class Receiver:
         def __init__(self, parent):
@@ -63,15 +72,16 @@ class SocketCommands:
                 sock.bind(("", self.parent.port))
                 sock.setblocking(False)
 
-                end_time = time.time() + 3
+                end_time = time.time() + 1
 
                 while time.time() < end_time:
                     try:
-                        data, addr = sock.recvfrom(4096)
-                        messages.append((data.decode(), addr))
+                        data, addr = sock.recvfrom(1024)
+                        text = data.decode("utf-8")
+                        json_data = json.loads(text)
+                        messages.append((json_data, addr))
                     except BlockingIOError:
                         pass
-
                     time.sleep(0.01)
 
                 sock.close()
@@ -79,3 +89,4 @@ class SocketCommands:
             thread = threading.Thread(target=listener, daemon=True)
             thread.start()
             return thread, messages
+
