@@ -47,6 +47,8 @@ class SocketCommands:
             }
             json_data = json.dumps(data)
             self.send_message(json_data)
+            with open("socket.txt", "w") as file:
+                file.write(new_socket)
 
     class Receiver:
         pass
