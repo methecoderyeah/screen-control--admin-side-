@@ -1,10 +1,13 @@
 import json
 import socket
+import threading
+import time
 
 class SocketCommands:
     def __init__(self):
         self.port = self.get_socket()
         self.messenger = self.Messenger(self)
+        self.receiver = self.Receiver(self)
 
     def get_socket(self):
         with open("./socket.txt", "r") as file:
@@ -26,8 +29,7 @@ class SocketCommands:
                 "Target": target,
                 "Command": "Freeze"
             }
-            json_data = json.dumps(data)
-            self.send_message(json_data)
+            self.send_message(json.dumps(data))
 
         def send_images(self, target):
             data = {
@@ -35,20 +37,45 @@ class SocketCommands:
                 "Target": target,
                 "Command": "Send Images"
             }
-            json_data = json.dumps(data)
-            self.send_message(json_data)
+            self.send_message(json.dumps(data))
 
         def reset_socket(self, new_socket, password):
             data = {
                 "Sender": "Screen Control",
                 "Command": "Reset Socket",
-                "Socket" : new_socket,
+                "Socket": new_socket,
                 "Password": password
             }
-            json_data = json.dumps(data)
-            self.send_message(json_data)
+            self.send_message(json.dumps(data))
+
             with open("socket.txt", "w") as file:
-                file.write(new_socket)
+                file.write(str(new_socket))
 
     class Receiver:
-        pass
+        def __init__(self, parent):
+            self.parent = parent
+
+        def listen_for_3_seconds(self):
+            messages = []
+
+            def listener():
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.bind(("", self.parent.port))
+                sock.setblocking(False)
+
+                end_time = time.time() + 3
+
+                while time.time() < end_time:
+                    try:
+                        data, addr = sock.recvfrom(4096)
+                        messages.append((data.decode(), addr))
+                    except BlockingIOError:
+                        pass
+
+                    time.sleep(0.01)
+
+                sock.close()
+
+            thread = threading.Thread(target=listener, daemon=True)
+            thread.start()
+            return thread, messages

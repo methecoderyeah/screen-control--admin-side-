@@ -122,10 +122,11 @@ class MainPage:
                 )
                 btn.image = button_tk
                 btn.grid(row=0, column=col)
+                return btn
 
-            make_button("Freeze All Screens", 0)
-            make_button("Refresh Data", 1)
-            make_button("Change Port", 2)
+            self.freeze_screens_button = make_button("Freeze All Screens", 0)
+            self.refresh_button = make_button("Refresh Data", 1)
+            self.change_port_button = make_button("Change Port", 2)
 
         controls()
 
@@ -147,5 +148,10 @@ class MainPage:
             table_widget = df_to_treeview(self.window, data)
             table_widget.grid(row=6, column=0, columnspan=3, padx=50, pady=20, sticky="nsew")
         table(data)
-    def initialize_freeze_button(self):
-        pass
+        
+    def initialize_freeze_button(self, command):
+        self.freeze_screens_button.config(command=command)
+    def initialize_refresh_button(self, command):
+        self.refresh_button.config(command=command)
+    def initialize_change_port_button(self, command):
+        self.change_port_button.config(command=command)
