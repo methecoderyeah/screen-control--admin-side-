@@ -62,6 +62,8 @@ def reset_port():
     password = big_askstring("Change Port", "Password")
     if password:
         port = big_askstring("Change Port", "Enter new port:")
+        with open("./socket.txt", "w") as file:
+            file.write(port)
 
 
 
