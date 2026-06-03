@@ -31,11 +31,13 @@ GUI_ = GUI.MainPage(window, df)
 
 #functions
 sc = SocketCommands()
-def freeze_screens():
+def freeze_all_screens():
     sc.messenger.freeze()
     if GUI_.freeze_screens_button["text"] == "Freeze All Screens":
+        GUI_.screens_frozen = True
         GUI_.freeze_screens_button.config(text="Unfreeze Screens")
     elif GUI_.freeze_screens_button["text"] == "Unfreeze Screens":
+        GUI_.screens_frozen = False
         GUI_.freeze_screens_button.config(text="Freeze All Screens")
 def refresh_buttons():
     sc.messenger.processes()
@@ -67,7 +69,7 @@ def reset_port():
 
 
 
-GUI_.initialize_freeze_button(freeze_screens)
+GUI_.initialize_freeze_button(freeze_all_screens)
 GUI_.initialize_refresh_button(refresh_buttons)
 GUI_.initialize_change_port_button(reset_port)
 

@@ -8,7 +8,7 @@ class MainPage:
     def __init__(self, window, data):
         self.window = window
         self.table_widget = None   # NEW: persistent table reference
-
+        self.screens_frozen = False
         self.ttk_()
         self.stretch_grid()
         self.build(data)

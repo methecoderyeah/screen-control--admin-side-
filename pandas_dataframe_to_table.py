@@ -30,7 +30,7 @@ def df_to_treeview(window, df):
         frame,
         columns=list(df.columns),
         show="headings",
-        height=7
+        height=10
     )
     tree.grid(row=0, column=0, sticky="nw")
 
@@ -70,7 +70,7 @@ def df_to_treeview(window, df):
     # Column widths (1.25x wider)
     for col in df.columns:
         tree.heading(col, text=col)
-        tree.column(col, width=356, anchor="center")
+        tree.column(col, width=650, anchor="center")
 
     # Tooltip storage
     cell_tooltips = {}
@@ -135,6 +135,17 @@ def df_to_treeview(window, df):
                 active_tooltip["obj"].hide_tooltip()
                 active_tooltip["obj"] = None
 
+    def on_row_click(event):
+        tree = event.widget
+        row_id = tree.identify_row(event.y)
+
+        if row_id:
+            user = tree.item(row_id, "values")
+            user = user[0]
+            print("Row clicked:", user)
+            # function here eventually
+
+    tree.bind("<ButtonRelease-1>", on_row_click)
     tree.bind("<Motion>", on_motion)
 
     return outer
