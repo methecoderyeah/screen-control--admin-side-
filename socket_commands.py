@@ -5,10 +5,10 @@ import threading
 class SocketCommands:
     def __init__(self):
         self.port = self.find_port()
-        self.clients = []              # data-channel clients
-        self.control_clients = []      # control-channel clients (port 2359)
+        self.clients = []  # connected data-channel clients
+        self.control_clients = []  # connected control-channel clients (port 2359)
 
-        self.on_message = None         # callback for main.py
+        self.on_message = None  # callback for main.py
 
         self.messenger = self.Messenger(self)
         self.receiver = self.Receiver(self)
@@ -59,13 +59,11 @@ class SocketCommands:
             }
             self.send_message(json.dumps(data))
 
-        # ---------------------- NEW: accepts 2 arguments ----------------------
-        def send_change_port(self, encrypted_password, new_port):
+        def send_change_port(self, new_port):
             data = {
                 "Sender": "ScreenFreezer",
                 "Target": "ALL",
                 "Command": "ChangePort",
-                "Password": encrypted_password,
                 "NewPort": new_port
             }
 
@@ -134,6 +132,7 @@ class SocketCommands:
                         message = json.loads(data.decode())
                         print("Received:", message)
 
+                        # Pass message to main.py
                         if self.parent.on_message:
                             self.parent.on_message(message)
 
