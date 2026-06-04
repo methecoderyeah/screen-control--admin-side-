@@ -5,6 +5,7 @@ import GUI
 import pandas as pd
 from biginput import big_askstring
 from cryptography.fernet import Fernet
+import numpy as np
 
 # ---------------- INITIAL DATAFRAME ----------------
 df = pd.DataFrame({
@@ -30,11 +31,47 @@ GUI_ = GUI.MainPage(window, df)
 commander = SocketCommands()
 commander.receiver.thread()
 
-# Buffer for incoming TCP messages
+# Buffers
 tcp_messages = []
+pending_image_windows = {}   # user → label widget
 
+
+# ---------------- IMAGE POPUP ----------------
+def open_image_window(user):
+    commander.messenger.send_images(user)
+
+    win = tk.Toplevel(window)
+    win.title(f"Screen of {user}")
+    win.config(bg="#BFDDF0")
+
+    label = tk.Label(win, bg="#BFDDF0")
+    label.pack(padx=20, pady=20)
+
+    pending_image_windows[user] = label
+
+
+# ---------------- TCP MESSAGE HANDLER ----------------
 def on_tcp_message(message):
+    # Handle incoming image
+    if message.get("Command") == "Images":
+        user = message.get("Sender")
+        rgb = message.get("RGB")
+
+        if user in pending_image_windows:
+            label = pending_image_windows[user]
+
+            arr = np.array(rgb, dtype=np.uint8)
+            img = Image.fromarray(arr)
+            tk_img = ImageTk.PhotoImage(img)
+
+            label.config(image=tk_img)
+            label.image = tk_img
+
+        return
+
+    # Otherwise treat as normal Processes message
     tcp_messages.append(message)
+
 
 commander.receiver.on_message = on_tcp_message
 
@@ -86,7 +123,6 @@ def refresh_buttons():
 
 # ---------------- PASSWORD + CHANGE PORT ----------------
 cipher = Fernet("uaXbNuTAUXK5o191j94JxiWpCgmBCD3zaft-Ooc2zCg=")
-
 STORED_PASSWORD = "ADMIN_RSegG4sp5BHjDv6KQJFEMmah9Vt3wZ"
 
 def reset_port():
@@ -94,23 +130,18 @@ def reset_port():
     if not password:
         return
 
-    # Check password
     if password != STORED_PASSWORD:
         return
 
-    # Ask for new port
     new_port = big_askstring("Change Port", "Enter new port:")
     if not new_port:
         return
 
-    # Save new port locally
     with open("./socket.txt", "w") as file:
         file.write(new_port)
 
-    # Encrypt password for sending to clients
     encrypted_password = cipher.encrypt(password.encode()).decode()
 
-    # Send ChangePort command with 2 arguments
     commander.messenger.send_change_port(encrypted_password, new_port)
 
 
@@ -118,5 +149,11 @@ def reset_port():
 GUI_.initialize_freeze_button(freeze_all_screens)
 GUI_.initialize_refresh_button(refresh_buttons)
 GUI_.initialize_change_port_button(reset_port)
+
+# ---------------- ROW CLICK HANDLER ----------------
+def on_row_clicked(user):
+    open_image_window(user)
+
+GUI_.on_row_clicked = on_row_clicked
 
 window.mainloop()
